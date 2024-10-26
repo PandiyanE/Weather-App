@@ -17,7 +17,10 @@ const temp = document.querySelector('#temp'),
  sunSet = document.querySelector('.Sunset'),
  weatherCards = document.querySelector('#weather-cards'),
  celciusBtn = document.querySelector('.celcius'),
- fahrenheitBtn = document.querySelector('.fahrenheit');
+ fahrenheitBtn = document.querySelector('.fahrenheit'),
+ hourlyBtn = document.querySelector('.hourly'),
+ weekBtn = document.querySelector('.week'),
+ tempUnit = document.querySelectorAll('.temp-unit');
 
 
  let currentCity = '';
@@ -104,6 +107,7 @@ function getWeatherData(city, unit, hourlyorWeek) {
         sunRise.innerText = convertTimeTo12HourFormat(today.sunrise);
         sunSet.innerText = convertTimeTo12HourFormat(today.sunset);
         mainIcon.src = getIcon(today.icon);
+        changeBackground(today.icon);
         if(hourlyorWeek === 'hourly') {
           updateForecast(data.days[0].hours, unit, 'day');
         } else{
@@ -278,3 +282,73 @@ function updateForecast(data, unit, type) {
       day++;
   }
 }
+
+//convert celcius to fahrenheit
+function celciusToFahrenheit(temp){
+  return((temp * 9) / 5 + 32).toFixed(1);
+}
+
+fahrenheitBtn.addEventListener('click', () => {
+  changeUnit('f');
+});
+celciusBtn.addEventListener('click', () => {
+  changeUnit('c'); 
+});
+
+// function to change unit
+function changeUnit(unit) {
+  if (currentUnit !== unit) {
+    currentUnit = unit;
+    tempUnit.forEach((elem) => {
+      elem.innerText = `°${unit.toUpperCase()}`;
+    });
+    if (unit === "c") {
+      celciusBtn.classList.add("active");
+      fahrenheitBtn.classList.remove("active");
+    } else {
+      celciusBtn.classList.remove("active");
+      fahrenheitBtn.classList.add("active");
+    }
+    getWeatherData(currentCity, currentUnit, hourlyorWeek);
+  }
+}
+
+function changeBackground(condition) {
+  const body = document.querySelector('body');
+  let bg = " ";
+  if(condition === 'Partly-cloudy-day') {
+      bg = "https://i.ibb.co/qNv7NxZ/pc.webp";
+  } else if (condition === 'Partly-cloudy-night') {
+      bg = "https://i.ibb.co/RDfPqXz/pcn.jpg";
+  } else if (condition === 'rain') { 
+      bg = "https://i.ibb.co/h2p6Yhd/rain.webp";
+  } else if (condition === 'clear-day') {
+      bg = "https://i.ibb.co/WGry01m/cd.jpg";
+  } else if (condition === 'clear-night') {
+      bg = "https://i.ibb.co/kqtZ1Gx/cn.jpg";
+  } else {
+      bg = "https://i.ibb.co/qNv7NxZ/pc.webp";
+  }
+  body.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${bg})`;
+}
+
+hourlyBtn.addEventListener('click', () =>{
+  changeTimeSpan('hourly');
+});
+weekBtn.addEventListener('click', () =>{
+  changeTimeSpan('week');
+});
+
+function changeTimeSpan(unit){
+  if(hourlyorWeek !== unit) {
+      hourlyorWeek = unit;
+      if(unit === 'hourly') {
+          hourlyBtn.classList.add('active');
+          weekBtn.classList.remove('active');
+      } else {
+          hourlyBtn.classList.remove('active');
+          weekBtn.classList.add('active');
+      }
+      getWeatherData(currentCity, currentUnit, hourlyorWeek);
+  }
+}   
