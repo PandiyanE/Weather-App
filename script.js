@@ -423,3 +423,21 @@ search.addEventListener("keydown", function (e) {
   }
 });
 
+function addActive(x) {
+  if (!x) return false;
+  removeActive(x);
+  if (currentFocus >= x.length) currentFocus = 0;
+  if (currentFocus < 0) currentFocus = x.length - 1;
+  x[currentFocus].classList.add("active");
+}
+
+function removeActive(x) {
+  for (var i = 0; i < x.length; i++) {
+    x[i].classList.remove("active");
+  }
+}
+
+function removeSuggestions() {
+  var x = document.getElementById("suggestions");
+  if (x) x.parentNode.removeChild(x);
+}
