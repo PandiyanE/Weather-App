@@ -20,7 +20,9 @@ const temp = document.querySelector('#temp'),
  fahrenheitBtn = document.querySelector('.fahrenheit'),
  hourlyBtn = document.querySelector('.hourly'),
  weekBtn = document.querySelector('.week'),
- tempUnit = document.querySelectorAll('.temp-unit');
+ tempUnit = document.querySelectorAll('.temp-unit'),
+ searchForm = document.querySelector("#search"),
+ search = document.querySelector("#query");
 
 
  let currentCity = '';
@@ -69,7 +71,7 @@ function getPublicIp(){
     .then((response) => response.json())
     .then((data)=>{
         console.log(data);
-        currentCity = data.currentCity;        
+        currentCity = data.city;        
         getWeatherData(data.city, currentUnit, hourlyorWeek);
     }).catch((err) => console.log('Error'));
 }
@@ -77,8 +79,8 @@ getPublicIp();
 
 //function to get weather data
 function getWeatherData(city, unit, hourlyorWeek) {
-    fetch(
-      'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}?unitGroup=metric&key=EJ6UBL2JEQGYB3AA4ENASN62J&contentType=json',
+  fetch(
+    `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}?unitGroup=metric&key=EJ6UBL2JEQGYB3AA4ENASN62J&contentType=json`,
       {
         method: "GET",
         headers: {},
@@ -114,7 +116,7 @@ function getWeatherData(city, unit, hourlyorWeek) {
           updateForecast(data.days, unit, 'week');
         }
 
-      })//.catch((err) => alert('Error'));      
+      }).catch((err) => alert('City not found in our database'));      
 };
 
 //function to get uv index status
@@ -352,3 +354,72 @@ function changeTimeSpan(unit){
       getWeatherData(currentCity, currentUnit, hourlyorWeek);
   }
 }   
+
+// function to handle search form
+searchForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  let location = search.value;
+  if (location) {
+    currentCity = location;
+    getWeatherData(location, currentUnit, hourlyorWeek);
+  }
+});
+
+// function to conver celcius to fahrenheit
+function celciusToFahrenheit(temp) {
+  return ((temp * 9) / 5 + 32).toFixed(1);
+}
+
+var currentFocus;
+search.addEventListener("input", function (e) {
+  removeSuggestions();
+  var a,
+    b,
+    i,
+    val = this.value;
+  if (!val) {
+    return false;
+  }
+  currentFocus = -1;
+
+  a = document.createElement("ul");
+  a.setAttribute("id", "suggestions");
+
+  this.parentNode.appendChild(a);
+
+  for (i = 0; i < cities.length; i++) {
+    if (
+      cities[i].name.substr(0, val.length).toUpperCase() == val.toUpperCase()
+    ) {
+      b = document.createElement("li");
+      b.innerHTML = "<strong>" + cities[i].name.substr(0, val.length) + "</strong>";
+      b.innerHTML += cities[i].name.substr(val.length);
+      b.innerHTML += "<input type='hidden' value='" + cities[i].name + "'>";
+      b.addEventListener("click", function (e) {
+        search.value = this.getElementsByTagName("input")[0].value;
+        removeSuggestions();
+      });
+
+      a.appendChild(b);
+    }
+  }
+});
+/*execute a function presses a key on the keyboard:*/
+search.addEventListener("keydown", function (e) {
+  var x = document.getElementById("suggestions");
+  if (x) x = x.getElementsByTagName("li");
+  if (e.keyCode == 40) {
+    currentFocus++;
+    addActive(x);
+  } else if (e.keyCode == 38) {
+    currentFocus--;
+    addActive(x);
+  }
+  if (e.keyCode == 13) {
+    e.preventDefault();
+    if (currentFocus > -1) {
+      if (x) x[currentFocus].click();
+    }
+  }
+});
+
